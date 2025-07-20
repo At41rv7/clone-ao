@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchModels } from '../utils/api';
 import { 
   SettingsIcon, 
   UserIcon, 
@@ -30,16 +31,15 @@ export default function Settings({ onBack }: SettingsProps) {
 
   const fetchModels = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/models');
-      if (response.ok) {
-        const data = await response.json();
-        setModels(data.models);
-        if (data.models.length > 0 && !selectedModel) {
-          setSelectedModel(data.models[0]);
-        }
+      const modelList = await fetchModels();
+      setModels(modelList);
+      if (modelList.length > 0 && !selectedModel) {
+        setSelectedModel(modelList[0]);
       }
     } catch (error) {
       console.error('Failed to fetch models:', error);
+      // Fallback to default models
+      setModels(['GPT-4 Turbo', 'Claude 3.5 Sonnet']);
     }
   };
 

@@ -6,6 +6,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import { MessageCircleIcon, SettingsIcon } from 'lucide-react';
 import Settings from './Settings';
+import { fetchModels, authenticatedFetch } from '../utils/api';
 
 export default function ChatInterface() {
   const { user, token } = useAuth();
@@ -32,30 +33,21 @@ export default function ChatInterface() {
 
   useEffect(() => {
     fetchChats();
-    fetchModels();
+    loadModels();
   }, []);
 
   const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-    const fullUrl = url.startsWith('http') ? url : `http://localhost:3001${url}`;
-    return fetch(fullUrl, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    return authenticatedFetch(url, token!, options);
   };
 
-  const fetchModels = async () => {
+  const loadModels = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/models');
-      if (response.ok) {
-        const data = await response.json();
-        setModels(data.models);
-      }
+      const modelList = await fetchModels();
+      setModels(modelList);
     } catch (error) {
       console.error('Failed to fetch models:', error);
+      // Fallback to default models
+      setModels(['GPT-4 Turbo', 'Claude 3.5 Sonnet']);
     }
   };
 

@@ -4,6 +4,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import { MessageCircleIcon, SettingsIcon, UserIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchModels, sendGuestMessage } from '../utils/api';
 
 interface GuestChatInterfaceProps {
   onShowSettings: () => void;
@@ -26,18 +27,17 @@ export default function GuestChatInterface({ onShowSettings }: GuestChatInterfac
   }, [messages]);
 
   useEffect(() => {
-    fetchModels();
+    loadModels();
   }, []);
 
-  const fetchModels = async () => {
+  const loadModels = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/models');
-      if (response.ok) {
-        const data = await response.json();
-        setModels(data.models);
-      }
+      const modelList = await fetchModels();
+      setModels(modelList);
     } catch (error) {
       console.error('Failed to fetch models:', error);
+      // Fallback to default models
+      setModels(['GPT-4 Turbo', 'Claude 3.5 Sonnet']);
     }
   };
 
@@ -56,34 +56,16 @@ export default function GuestChatInterface({ onShowSettings }: GuestChatInterfac
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('http://localhost:3001/api/guest/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          message: messageContent, 
-          model,
-          history: messages.slice(-10) // Send last 10 messages for context
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to send message';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          errorMessage = `Server error: ${response.status}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
+      const aiResponse = await sendGuestMessage(
+        messageContent, 
+        model, 
+        messages.slice(-10) // Send last 10 messages for context
+      );
+      
       const aiMessage: Message = {
         id: Date.now() + 1,
         chat_id: 0,
-        content: data.response,
+        content: aiResponse,
         role: 'assistant',
         model: model,
         created_at: new Date().toISOString(),

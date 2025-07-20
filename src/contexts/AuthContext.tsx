@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType } from '../types';
+import { apiConfig } from '../utils/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -36,8 +37,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = async (username: string, password: string) => {
+    if (!apiConfig.isDevelopment) {
+      throw new Error('Authentication is only available in development mode. Please use Guest Mode to explore the interface.');
+    }
+    
     try {
-      const response = await fetch('http://localhost:3001/api/login', {
+      const response = await fetch(`${apiConfig.baseUrl}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,8 +75,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signup = async (username: string, password: string) => {
+    if (!apiConfig.isDevelopment) {
+      throw new Error('Account creation is only available in development mode. Please use Guest Mode to explore the interface.');
+    }
+    
     try {
-      const response = await fetch('http://localhost:3001/api/signup', {
+      const response = await fetch(`${apiConfig.baseUrl}/api/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

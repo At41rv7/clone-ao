@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MessageCircleIcon, EyeIcon, EyeOffIcon, UserIcon } from 'lucide-react';
+import { apiConfig } from '../utils/api';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -49,6 +50,14 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {mode === 'login' ? 'Welcome back' : 'Create account'}
           </h2>
+          {!apiConfig.isDevelopment && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                This is a demo version. Authentication features are only available in development mode.
+                Please use Guest Mode to explore the interface.
+              </p>
+            </div>
+          )}
           <p className="text-sm text-gray-600">
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
             <button
@@ -123,7 +132,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
 
           <button
             type="submit"
-            disabled={loading || !username.trim() || password.length < 6}
+            disabled={loading || !username.trim() || password.length < 6 || !apiConfig.isDevelopment}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading ? (
@@ -132,7 +141,7 @@ export default function AuthForm({ mode, onToggleMode }: AuthFormProps) {
                 <span>Please wait...</span>
               </div>
             ) : (
-              mode === 'login' ? 'Sign in' : 'Create account'
+              !apiConfig.isDevelopment ? 'Demo Mode - Use Guest Access' : (mode === 'login' ? 'Sign in' : 'Create account')
             )}
           </button>
 

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SendIcon, Settings2Icon } from 'lucide-react';
+import { fetchModels } from '../utils/api';
 
 interface ChatInputProps {
   onSendMessage: (message: string, model: string) => void;
@@ -12,6 +13,26 @@ export default function ChatInput({ onSendMessage, loading, models }: ChatInputP
   const [selectedModel, setSelectedModel] = useState('');
   const [showModelSelect, setShowModelSelect] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const initializeModel = async () => {
+      if (models.length > 0 && !selectedModel) {
+        setSelectedModel(models[0]);
+      } else if (models.length === 0) {
+        // Fallback: load models if not provided
+        try {
+          const modelList = await fetchModels();
+          if (modelList.length > 0 && !selectedModel) {
+            setSelectedModel(modelList[0]);
+          }
+        } catch (error) {
+          console.error('Failed to load models:', error);
+        }
+      }
+    };
+    
+    initializeModel();
+  }, [models, selectedModel]);
 
   useEffect(() => {
     if (models.length > 0 && !selectedModel) {
