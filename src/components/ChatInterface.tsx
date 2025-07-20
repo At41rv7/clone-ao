@@ -22,15 +22,6 @@ export default function ChatInterface() {
     return <Settings onBack={() => setShowSettings(false)} />;
   }
 
-  const { user, token } = useAuth();
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChat, setCurrentChat] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [models, setModels] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
